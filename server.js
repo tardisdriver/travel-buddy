@@ -4,21 +4,12 @@ const mongojs = require('mongojs');
 const db = mongojs('travelDb', ['trips']);
 const bodyParser = require('body-parser');
 
-//const rollbar = angular.module('trips', ['tandibar/ng-rollbar']);
+const {DATABASE_URL, PORT} = require('./config');
 
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
-/*rollbar.config(function(RollbarProvider){
-	RollbarProvider.init({
-		accessToken: "e8e9bdb32bd542468503e572f0f6fc53",
-		captureUncaught: true,
-		payload: {
-			environment: ''
-		}
-	})
-})*/
 
 app.get('/trips', function (req, res) {
 	console.log("get request recieved");
@@ -60,5 +51,43 @@ app.put('/trips/:id', function (req, res) {
   );
 });
 
-app.listen(3000);
-console.log("Server running on port 3000");
+function runServer(databaseUrl=DATABASE_URL, port=PORT) {
+  return new Promise((resolve, reject) => {
+    mongoose.connect(databaseUrl, err => {
+      if (err) {
+        return reject(err);
+      }
+      server = app.listen(port, () => {
+        console.log(`Your app is listening on port ${port}`);
+        resolve();
+      })
+      .on('error', err => {
+        mongoose.disconnect();
+        reject(err);
+      });
+    });
+  });
+}
+
+function closeServer() {
+  return mongoose.disconnect().then(() => {
+     return new Promise((resolve, reject) => {
+       console.log('Closing server');
+       server.close(err => {
+           if (err) {
+               return reject(err);
+           }
+           resolve();
+       });
+     });
+  });
+}
+
+if (require.main === module) {
+  runServer().catch(err => console.error(err));
+};
+
+module.exports = {app, runServer, closeServer};
+
+//app.listen(3000);
+//console.log("Server running on port 3000");
