@@ -4,11 +4,21 @@ const mongojs = require('mongojs');
 const db = mongojs('travelDb', ['trips']);
 const bodyParser = require('body-parser');
 
+//const rollbar = angular.module('trips', ['tandibar/ng-rollbar']);
+
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
-
+/*rollbar.config(function(RollbarProvider){
+	RollbarProvider.init({
+		accessToken: "e8e9bdb32bd542468503e572f0f6fc53",
+		captureUncaught: true,
+		payload: {
+			environment: ''
+		}
+	})
+})*/
 
 app.get('/trips', function (req, res) {
 	console.log("get request recieved");
